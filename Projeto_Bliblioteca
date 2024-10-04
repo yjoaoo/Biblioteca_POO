@@ -1,0 +1,121 @@
+from abc import ABC, abstractmethod
+
+class Livro:
+    def __init__(self, titulo, autor):
+        self.titulo = titulo
+        self.autor = autor
+        self.disponivel = True
+    
+    def emprestar(self):
+        if self.disponivel:
+            self.disponivel = False
+            print(f"O livro '{self.titulo}' foi emprestado com sucesso!")
+        else:
+            print(f"O livro '{self.titulo}' não está disponível")
+        
+    def devolver(self):
+        self.disponivel = True
+        print(f"O livro '{self.titulo}' foi devolvido")
+
+    def mostrar_informacoes(self):
+        print(f"Título: {self.titulo}, Autor: {self.autor}")
+
+class Usuario(ABC):
+    def __init__(self, nome, email):
+        self.nome = nome
+        self.email = email
+
+    @abstractmethod
+    def pesquisar_livro(self, biblioteca, titulo):
+        ...
+
+    @abstractmethod
+    def verificar_livros_emprestados(self):
+        ...
+
+class Membro(Usuario):
+    def __init__(self, nome, email):
+        super().__init__(nome, email)
+        self.livros_emprestados = [] 
+
+    def emprestar_livro(self, livro):
+        if len(self.livros_emprestados) < 3:
+            if livro.disponivel:
+                livro.emprestar() 
+                self.livros_emprestados.append(livro) 
+                print(f"{self.nome} emprestou o livro '{livro.titulo}'.")
+            else:
+                print(f"O livro '{livro.titulo}' não está disponível para empréstimo.")
+        else:
+            print(f"{self.nome} já tem 3 livros emprestados. Não pode emprestar mais.")
+
+    def devolver_livro(self, livro):
+        if livro in self.livros_emprestados:
+            livro.devolver()  # Devolve o livro
+            self.livros_emprestados.remove(livro)
+            print(f"O livro '{livro.titulo}' foi devolvido com sucesso!")
+        else:
+            print("Esse livro não foi emprestado.")
+
+    def pesquisar_livro(self, biblioteca, titulo):
+        biblioteca.pesquisar_livro(titulo)
+
+    def verificar_livros_emprestados(self):
+        if self.livros_emprestados:
+            print(f"Livros emprestados por {self.nome}: {[livro.titulo for livro in self.livros_emprestados]}")
+        else:
+            print(f"{self.nome} não possui livros emprestados.")
+
+class Funcionario(Usuario):
+    def adicionar_livro(self, livro, biblioteca):
+        biblioteca.catalogo.append(livro)
+        print(f"Livro '{livro.titulo}' adicionado ao catálogo.")
+
+    def remover_livro(self, livro, biblioteca):
+        if livro in biblioteca.catalogo:
+            biblioteca.catalogo.remove(livro)
+            print(f"Livro '{livro.titulo}' removido do catálogo.")
+        else:
+            print(f"Livro '{livro.titulo}' não encontrado no catálogo.")
+
+    def pesquisar_livro(self, biblioteca, titulo):
+        biblioteca.pesquisar_livro(titulo)
+
+    def verificar_livros_emprestados(self):
+        print("Funcionário não possui livros emprestados.")
+
+class Biblioteca:
+    def __init__(self):
+        self.catalogo = []
+        self.usuarios = []
+
+    def adicionar_usuario(self, usuario):
+        self.usuarios.append(usuario)
+
+    def mostrar_catalogo(self):
+        if not self.catalogo:
+            print("O catálogo está vazio.")
+        else:
+            for livro in self.catalogo:
+                print(f"Título: {livro.titulo}, Autor: {livro.autor}, Disponível: {livro.disponivel}")
+
+    def pesquisar_livro(self, titulo):
+        for livro in self.catalogo:
+            if livro.titulo.lower() == titulo.lower():
+                print(f"Livro encontrado: {livro.titulo} - Autor: {livro.autor}")
+                return
+        print("Livro não encontrado.")
+
+livro1 = Livro("Duna", "Frank Herbert")
+livro1.mostrar_informacoes()
+livro1.emprestar()
+livro1.devolver()
+
+biblioteca = Biblioteca()
+membro = Membro("João", "jao@gmail.com")
+biblioteca.adicionar_usuario(membro)
+
+funcionario = Funcionario("Pedro", "Pedroloko@gmail.com")
+biblioteca.adicionar_usuario(funcionario)
+
+biblioteca.mostrar_catalogo()
